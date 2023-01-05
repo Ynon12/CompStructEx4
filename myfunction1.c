@@ -85,31 +85,25 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
 
 	if (filter) {
 		// find min and max coordinates
-        int indexMin;
-        int indexMax;
 		for(ii = max(i-1, 0); ii <= min(i+1, dim-1); ii++) {
 			for(jj = max(j-1, 0); jj <= min(j+1, dim-1); jj++) {
 				// check if smaller than min or higher than max and update
-                int index = calcIndex(ii, jj, dim);
-				loop_pixel = src[index];
-                int intensity = ((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue);
-				if (intensity <= min_intensity) {
-					min_intensity = intensity;
+				loop_pixel = src[calcIndex(ii, jj, dim)];
+				if ((((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue)) <= min_intensity) {
+					min_intensity = (((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue));
 					min_row = ii;
 					min_col = jj;
-                    indexMin = index;
 				}
-				if (intensity > max_intensity) {
-					max_intensity = intensity;
+				if ((((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue)) > max_intensity) {
+					max_intensity = (((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue));
 					max_row = ii;
 					max_col = jj;
-                    indexMax = index;
 				}
 			}
 		}
 		// filter out min and max
-		sum_pixels_by_weight(&sum, src[indexMin], -1);
-		sum_pixels_by_weight(&sum, src[indexMax], -1);
+		sum_pixels_by_weight(&sum, src[calcIndex(min_row, min_col, dim)], -1);
+		sum_pixels_by_weight(&sum, src[calcIndex(max_row, max_col, dim)], -1);
 	}
 
 	// assign kernel's result to pixel at [i,j]
