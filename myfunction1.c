@@ -70,19 +70,6 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
         sum_pixels_by_weight(&sum, src[globali*dim + globalj], kernel[locali][localj]);
     }
 
-//    for (int ii =startIndexI; ii < i+2; ii++) {
-//        for (int jj = startIndexJ; jj < j+2; jj++) {
-//
-//            sum_pixels_by_weight(&sum, src[ii*dim + jj], kernel[ii - startIndexI][ jj - startIndexJ]);
-//        }
-//    }
-
-//    for (int ii = i-1; ii < i+2; ii++) {
-//        for (int jj = j-1; jj < j+2 jj++) {
-//            sum_pixels_by_weight(&sum, src[ii*dim + jj], kernel[][]);
-//        }
-//    }
-
 //	for(ii = startIndexI; ii <= endIndexI; ii++) {
 //        int index = ii * dim;
 //		for(jj = startIndexJ; jj <= endIndexJ; jj++) {
