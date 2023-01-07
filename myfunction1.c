@@ -61,17 +61,6 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
 
     int globali, globalj, locali, localj, ii;
 
-
-//    for (ii = 0; ii < 9; ii++) {
-//        locali = ii/3;
-//        localj = ii%3;
-//
-//        globali = startIndexI+locali;
-//        globalj = startIndexJ+localj;
-//
-//        sum_pixels_by_weight(&sum, src[globali*dim + globalj], kernel[locali][localj]);
-//    }
-
     pixel tmp;
 
     if (kernelNum == 1) {
@@ -197,17 +186,22 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
         }
     }
 
-	if (filter) {
-        for (ii = 0; ii < 9; ii++) {
-            locali = ii/3;
-            localj = ii%3;
+    if (filter) {
+        int sumRed = 0;
+        int sumBlue = 0;
+        int sumGreen = 0;
 
-            globali = startIndexI+locali;
-            globalj = startIndexJ+localj;
+        for (int ii = 0; ii < 9; ii++) {
+            int globali = startIndexI + ii/3;
+            int globalj = startIndexJ + ii%3;
 
-            loop_pixel = src[globali * dim + globalj];
+            pixel loop_pixel = src[globali * dim + globalj];
+            int intensity = loop_pixel.red + loop_pixel.green + loop_pixel.blue;
 
-            int intensity = ((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue);
+            sumRed += loop_pixel.red;
+            sumBlue += loop_pixel.blue;
+            sumGreen += loop_pixel.green;
+
             if (intensity <= min_intensity) {
                 min_intensity = intensity;
                 min_row = globali;
@@ -220,10 +214,10 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
             }
         }
 
-		// filter out min and max
-        sum_pixels_by_weight(&sum, src[min_row * dim + min_col], -1);
-        sum_pixels_by_weight(&sum, src[max_row * dim + max_col], -1);
-	}
+        sum.red = sumRed - src[min_row * dim + min_col].red - src[max_row * dim + max_col].red;
+        sum.blue = sumBlue - src[min_row * dim + min_col].blue - src[max_row * dim + max_col].blue;
+        sum.green = sumGreen - src[min_row * dim + min_col].green - src[max_row * dim + max_col].green;
+    }
 
 	// assign kernel's result to pixel at [i,j]
 	assign_sum_to_pixel(&current_pixel, sum, kernelScale);
