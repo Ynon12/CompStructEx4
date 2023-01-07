@@ -61,27 +61,44 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
 
     int globali, globalj, locali, localj, ii;
 
+//    for (ii = 0; ii < 9; ii++) {
+//        locali = ii/3;
+//        localj = ii%3;
+//
+//        globali = startIndexI+locali;
+//        globalj = startIndexJ+localj;
+//
+//        sum_pixels_by_weight(&sum, src[globali*dim + globalj], kernel[locali][localj]);
+//    }
+
     for (ii = 0; ii < 9; ii++) {
-        locali = ii/3;
-        localj = ii%3;
+        int locali = ii/3;
+        int localj = ii%3;
 
-        globali = startIndexI+locali;
-        globalj = startIndexJ+localj;
+        int globali = startIndexI+locali;
+        int globalj = startIndexJ+localj;
 
-        sum_pixels_by_weight(&sum, src[globali*dim + globalj], kernel[locali][localj]);
+        int kernel_val;
+        pixel src_pixel;
+        memcpy(&kernel_val, &kernel[locali][localj], sizeof(int));
+        memcpy(&src_pixel, &src[globali*dim + globalj], sizeof(pixel));
+
+        sum_pixels_by_weight(&sum, src_pixel, kernel_val);
     }
 
-	if (filter) {
+    if (filter) {
         for (ii = 0; ii < 9; ii++) {
-            locali = ii/3;
-            localj = ii%3;
+            int locali = ii/3;
+            int localj = ii%3;
 
-            globali = startIndexI+locali;
-            globalj = startIndexJ+localj;
+            int globali = startIndexI+locali;
+            int globalj = startIndexJ+localj;
 
-            loop_pixel = src[globali * dim + globalj];
+            pixel loop_pixel;
+            memcpy(&loop_pixel, &src[globali * dim + globalj], sizeof(pixel));
 
-            int intensity = ((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue);
+            int intensity;
+            intensity = ((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue);
             if (intensity <= min_intensity) {
                 min_intensity = intensity;
                 min_row = globali;
@@ -94,10 +111,38 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
             }
         }
 
-		// filter out min and max
+        // filter out min and max
         sum_pixels_by_weight(&sum, src[min_row * dim + min_col], -1);
         sum_pixels_by_weight(&sum, src[max_row * dim + max_col], -1);
-	}
+    }
+
+//	if (filter) {
+//        for (ii = 0; ii < 9; ii++) {
+//            locali = ii/3;
+//            localj = ii%3;
+//
+//            globali = startIndexI+locali;
+//            globalj = startIndexJ+localj;
+//
+//            loop_pixel = src[globali * dim + globalj];
+//
+//            int intensity = ((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue);
+//            if (intensity <= min_intensity) {
+//                min_intensity = intensity;
+//                min_row = globali;
+//                min_col = globalj;
+//            }
+//            if (intensity > max_intensity) {
+//                max_intensity = intensity;
+//                max_row = globali;
+//                max_col = globalj;
+//            }
+//        }
+//
+//		// filter out min and max
+//        sum_pixels_by_weight(&sum, src[min_row * dim + min_col], -1);
+//        sum_pixels_by_weight(&sum, src[max_row * dim + max_col], -1);
+//	}
 
 	// assign kernel's result to pixel at [i,j]
 	assign_sum_to_pixel(&current_pixel, sum, kernelScale);
