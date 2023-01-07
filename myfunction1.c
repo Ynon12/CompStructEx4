@@ -45,7 +45,7 @@ static void sum_pixels_by_weight(pixel_sum *sum, pixel p, float weight) {
 /*
  *  Applies kernel for pixel at (i,j)
  */
-static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int kernel[kernelSize][kernelSize], int kernelScale, bool filter) {
+static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int kernel[kernelSize][kernelSize], int kernelScale, bool filter, int kernelNum) {
 
 	pixel_sum sum;
 	pixel current_pixel;
@@ -61,6 +61,7 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
 
     int globali, globalj, locali, localj, ii;
 
+
 //    for (ii = 0; ii < 9; ii++) {
 //        locali = ii/3;
 //        localj = ii%3;
@@ -71,34 +72,142 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
 //        sum_pixels_by_weight(&sum, src[globali*dim + globalj], kernel[locali][localj]);
 //    }
 
-    for (ii = 0; ii < 9; ii++) {
-        int locali = ii/3;
-        int localj = ii%3;
+    pixel tmp;
 
-        int globali = startIndexI+locali;
-        int globalj = startIndexJ+localj;
+    if (kernelNum == 1) {
 
-        int kernel_val;
-        pixel src_pixel;
-        memcpy(&kernel_val, &kernel[locali][localj], sizeof(int));
-        memcpy(&src_pixel, &src[globali*dim + globalj], sizeof(pixel));
+        int sumRed = 0;
+        int sumBlue = 0;
+        int sumGreen = 0;
 
-        sum_pixels_by_weight(&sum, src_pixel, kernel_val);
+        for (ii = 0; ii < 9; ii++) {
+            locali = ii/3;
+            localj = ii%3;
+
+            globali = startIndexI+locali;
+            globalj = startIndexJ+localj;
+
+            tmp = src[globali*dim + globalj];
+
+            sumRed += tmp.red;
+            sumBlue += tmp.blue;
+            sumGreen += tmp.green;
+        }
+
+        sum.red = sumRed;
+        sum.blue = sumBlue;
+        sum.green = sumGreen;
+
+    } else if (kernelNum == 2) {
+
+        int sumRed = 0;
+        int sumBlue = 0;
+        int sumGreen = 0;
+
+        for (ii = 0; ii < 9; ii++) {
+
+            locali = ii/3;
+            localj = ii%3;
+
+            globali = startIndexI+locali;
+            globalj = startIndexJ+localj;
+
+            tmp = src[globali*dim + globalj];
+
+            if (ii == 4) {
+                sumRed += tmp.red * 9;
+                sumBlue += tmp.blue * 9;
+                sumGreen += tmp.green * 9;
+            } else {
+                sumRed -= tmp.red;
+                sumBlue -= tmp.blue;
+                sumGreen -= tmp.green;
+            }
+        }
+
+        sum.red = sumRed;
+        sum.blue = sumBlue;
+        sum.green = sumGreen;
+
+    } else if (kernelNum == 3) {
+
+        int sumRed = 0;
+        int sumBlue = 0;
+        int sumGreen = 0;
+
+        tmp = src[(startIndexI+1)*dim + startIndexJ];
+
+        sumRed += tmp.red;
+        sumBlue += tmp.blue;
+        sumGreen += tmp.green;
+
+        tmp = src[(startIndexI+1)*dim + startIndexJ + 1];
+
+        sumRed += tmp.red * 2;
+        sumBlue += tmp.blue * 2;
+        sumGreen += tmp.green * 2;
+
+        tmp = src[(startIndexI+1)*dim + startIndexJ + 2];
+
+        sumRed += tmp.red;
+        sumBlue += tmp.blue;
+        sumGreen += tmp.green;
+
+        sum.red = sumRed;
+        sum.blue = sumBlue;
+        sum.green = sumGreen;
+
+    } else if (kernelNum == 4) {
+
+        int sumRed = 0;
+        int sumBlue = 0;
+        int sumGreen = 0;
+
+        tmp = src[(startIndexI+1)*dim + startIndexJ];
+
+        sumRed += tmp.red * (-2);
+        sumBlue += tmp.blue * (-2);
+        sumGreen += tmp.green * (-2);
+
+        tmp = src[(startIndexI+1)*dim + startIndexJ + 1];
+
+        sumRed += tmp.red * 6;
+        sumBlue += tmp.blue * 6;
+        sumGreen += tmp.green * 6;
+
+        tmp = src[(startIndexI+1)*dim + startIndexJ + 2];
+
+        sumRed += tmp.red * (-2);
+        sumBlue += tmp.blue * (-2);
+        sumGreen += tmp.green * (-2);
+
+        sum.red = sumRed;
+        sum.blue = sumBlue;
+        sum.green = sumGreen;
+
+    } else {
+        for (ii = 0; ii < 9; ii++) {
+            locali = ii/3;
+            localj = ii%3;
+
+            globali = startIndexI+locali;
+            globalj = startIndexJ+localj;
+
+            sum_pixels_by_weight(&sum, src[globali*dim + globalj], kernel[locali][localj]);
+        }
     }
 
-    if (filter) {
+	if (filter) {
         for (ii = 0; ii < 9; ii++) {
-            int locali = ii/3;
-            int localj = ii%3;
+            locali = ii/3;
+            localj = ii%3;
 
-            int globali = startIndexI+locali;
-            int globalj = startIndexJ+localj;
+            globali = startIndexI+locali;
+            globalj = startIndexJ+localj;
 
-            pixel loop_pixel;
-            memcpy(&loop_pixel, &src[globali * dim + globalj], sizeof(pixel));
+            loop_pixel = src[globali * dim + globalj];
 
-            int intensity;
-            intensity = ((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue);
+            int intensity = ((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue);
             if (intensity <= min_intensity) {
                 min_intensity = intensity;
                 min_row = globali;
@@ -111,38 +220,10 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
             }
         }
 
-        // filter out min and max
+		// filter out min and max
         sum_pixels_by_weight(&sum, src[min_row * dim + min_col], -1);
         sum_pixels_by_weight(&sum, src[max_row * dim + max_col], -1);
-    }
-
-//	if (filter) {
-//        for (ii = 0; ii < 9; ii++) {
-//            locali = ii/3;
-//            localj = ii%3;
-//
-//            globali = startIndexI+locali;
-//            globalj = startIndexJ+localj;
-//
-//            loop_pixel = src[globali * dim + globalj];
-//
-//            int intensity = ((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue);
-//            if (intensity <= min_intensity) {
-//                min_intensity = intensity;
-//                min_row = globali;
-//                min_col = globalj;
-//            }
-//            if (intensity > max_intensity) {
-//                max_intensity = intensity;
-//                max_row = globali;
-//                max_col = globalj;
-//            }
-//        }
-//
-//		// filter out min and max
-//        sum_pixels_by_weight(&sum, src[min_row * dim + min_col], -1);
-//        sum_pixels_by_weight(&sum, src[max_row * dim + max_col], -1);
-//	}
+	}
 
 	// assign kernel's result to pixel at [i,j]
 	assign_sum_to_pixel(&current_pixel, sum, kernelScale);
@@ -154,13 +235,13 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
 * Ignore pixels where the kernel exceeds bounds. These are pixels with row index smaller than kernelSize/2 and/or
 * column index smaller than kernelSize/2
 */
-void smooth(int dim, pixel *src, pixel *dst, int kernelSize, int kernel[kernelSize][kernelSize], int kernelScale, bool filter) {
+void smooth(int dim, pixel *src, pixel *dst, int kernelSize, int kernel[kernelSize][kernelSize], int kernelScale, bool filter, int kernelNum) {
 
 	int i, j;
 	for (i = kernelSize / 2 ; i < dim - kernelSize / 2; i++) {
         int rowStart = i * dim;
 		for (j =  kernelSize / 2 ; j < dim - kernelSize / 2 ; j++) {
-			dst[rowStart + j] = applyKernel(dim, i, j, src, kernelSize, kernel, kernelScale, filter);
+			dst[rowStart + j] = applyKernel(dim, i, j, src, kernelSize, kernel, kernelScale, filter, kernelNum);
 		}
 	}
 }
@@ -233,7 +314,7 @@ void copyPixels(pixel* src, pixel* dst) {
 //	}
 }
 
-void doConvolution(Image *image, int kernelSize, int kernel[kernelSize][kernelSize], int kernelScale, bool filter) {
+void doConvolution(Image *image, int kernelSize, int kernel[kernelSize][kernelSize], int kernelScale, bool filter, int kernelNum) {
 
 	pixel* pixelsImg = malloc(m*n*sizeof(pixel));
 	pixel* backupOrg = malloc(m*n*sizeof(pixel));
@@ -241,7 +322,7 @@ void doConvolution(Image *image, int kernelSize, int kernel[kernelSize][kernelSi
 	charsToPixels(image, pixelsImg);
 	copyPixels(pixelsImg, backupOrg);
 
-	smooth(m, backupOrg, pixelsImg, kernelSize, kernel, kernelScale, filter);
+	smooth(m, backupOrg, pixelsImg, kernelSize, kernel, kernelScale, filter, kernelNum);
 
 	pixelsToChars(pixelsImg, image);
 
