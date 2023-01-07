@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include "myfunction1.h"
 #include "showBMP.h"
+#include <string.h>
+#include <stdio.h>
 /*
  * initialize_pixel_sum - Initializes all fields of sum to 0
  */
@@ -168,46 +170,70 @@ void smooth(int dim, pixel *src, pixel *dst, int kernelSize, int kernel[kernelSi
 
 void charsToPixels(Image *charsImg, pixel* pixels) {
 
-	int row, col;
-	for (row = 0 ; row < m ; row++) {
-        int rowStart = row * n;
-		for (col = 0 ; col < n ; col++) {
-            int index = rowStart + col;
-            int imIndex = 3 * index;
-			pixels[index].red = image->data[imIndex];
-			pixels[index].green = image->data[imIndex + 1];
-			pixels[index].blue = image->data[imIndex + 2];
-		}
-	}
+    size_t numPixels = m * n;
+    size_t pixelSize = sizeof(pixel);
+
+    memcpy(pixels, charsImg->data, numPixels * pixelSize);
+
+//    int numChars = 3*m*n;
+//    char pix[numChars];
+//    memcpy(pix, charsImg->data, numChars);
+//
+//	int row, col;
+//	for (row = 0 ; row < m ; row++) {
+//        int rowStart = row * n;
+//		for (col = 0 ; col < n ; col++) {
+//            int index = rowStart + col;
+//            int imIndex = 3 * index;
+//            pixels[index].red = pix[imIndex];
+//            pixels[index].green = pix[imIndex + 1];
+//            pixels[index].blue = pix[imIndex + 2];
+//		}
+//	}
+
 }
 
 void pixelsToChars(pixel* pixels, Image *charsImg) {
 
-	int row, col;
-	for (row = 0 ; row < m ; row++) {
-        int rowStart = row * n;
-		for (col = 0 ; col < n ; col++) {
-            int index = rowStart + col;
-            int imIndex = 3 * index;
-			image->data[imIndex] = pixels[index].red;
-			image->data[imIndex + 1] = pixels[index].green;
-			image->data[imIndex + 2] = pixels[index].blue;
-		}
-	}
+    size_t numPixels = m * n;
+    size_t pixelSize = sizeof(pixel);
+
+    memcpy(charsImg->data, pixels, numPixels * pixelSize);
+
+//    int numChars = sizeof(pixel)*m*n;
+//    pixel pix[numChars];
+//    memcpy(pix, pixels, numChars);
+//
+//    int row, col;
+//	for (row = 0 ; row < m ; row++) {
+//        int rowStart = row * n;
+//		for (col = 0 ; col < n ; col++) {
+//            int index = rowStart + col;
+//            int imIndex = 3 * index;
+//			image->data[imIndex] = pix[index].red;
+//			image->data[imIndex + 1] = pix[index].green;
+//			image->data[imIndex + 2] = pix[index].blue;
+//		}
+//	}
 }
 
 void copyPixels(pixel* src, pixel* dst) {
 
-	int row, col;
-	for (row = 0 ; row < m ; row++) {
-        int rowStart = row * n;
-		for (col = 0 ; col < n ; col++) {
-            int index = rowStart + col;
-			dst[index].red = src[index].red;
-			dst[index].green = src[index].green;
-			dst[index].blue = src[index].blue;
-		}
-	}
+    size_t numPixels = m * n;
+    size_t pixelSize = sizeof(pixel);
+
+    memcpy(dst, src, numPixels * pixelSize);
+
+//	int row, col;
+//	for (row = 0 ; row < m ; row++) {
+//        int rowStart = row * n;
+//		for (col = 0 ; col < n ; col++) {
+//            int index = rowStart + col;
+//			dst[index].red = src[index].red;
+//			dst[index].green = src[index].green;
+//			dst[index].blue = src[index].blue;
+//		}
+//	}
 }
 
 void doConvolution(Image *image, int kernelSize, int kernel[kernelSize][kernelSize], int kernelScale, bool filter) {
