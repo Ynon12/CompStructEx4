@@ -17,25 +17,24 @@ void initialize_pixel_sum(pixel_sum *sum) {
  * assign_sum_to_pixel - Truncates pixel's new value to match the range [0,255]
  */
 static void assign_sum_to_pixel(pixel *current_pixel, pixel_sum sum, int kernelScale) {
-//
-//	// divide by kernel's weight
-	sum.red = sum.red / kernelScale;
-	sum.green = sum.green / kernelScale;
-	sum.blue = sum.blue / kernelScale;
 
-	// truncate each pixel's color values to match the range [0,255]
-	current_pixel->red = (unsigned char) (min(max(sum.red, 0), 255));
-	current_pixel->green = (unsigned char) (min(max(sum.green, 0), 255));
-	current_pixel->blue = (unsigned char) (min(max(sum.blue, 0), 255));
-	return;
+    // divide by kernel's weight
+    sum.red = sum.red / kernelScale;
+    sum.green = sum.green / kernelScale;
+    sum.blue = sum.blue / kernelScale;
+
+    // truncate each pixel's color values to match the range [0,255]
+    current_pixel->red = (unsigned char) (sum.red < 0 ? 0 : (sum.red > 255 ? 255 : sum.red));
+    current_pixel->green = (unsigned char) (sum.green < 0 ? 0 : (sum.green > 255 ? 255 : sum.green));
+    current_pixel->blue = (unsigned char) (sum.blue < 0 ? 0 : (sum.blue > 255 ? 255 : sum.blue));
+    return;
+
 }
 
 /*
 * sum_pixels_by_weight - Sums pixel values, scaled by given weight
 */
 static void sum_pixels_by_weight(pixel_sum *sum, pixel p, float weight) {
-//    __asm__("movl %edx, %eax\n\t"
-//            "addl $2, %eax\n\t");
 	sum->red += (int) (p.red * weight);
 	sum->green += (int) (p.green * weight);
 	sum->blue += (int) (p.blue * weight);
@@ -72,35 +71,6 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
         sum_pixels_by_weight(&sum, src[globali*dim + globalj], kernel[locali][localj]);
     }
 
-//	for(ii = startIndexI; ii <= endIndexI; ii++) {
-//        int index = ii * dim;
-//		for(jj = startIndexJ; jj <= endIndexJ; jj++) {
-//
-//			int kRow, kCol;
-//
-//			// compute row index in kernel
-//			if (ii < i) {
-//				kRow = 0;
-//			} else if (ii > i) {
-//				kRow = 2;
-//			} else {
-//				kRow = 1;
-//			}
-//
-//			// compute column index in kernel
-//			if (jj < j) {
-//				kCol = 0;
-//			} else if (jj > j) {
-//				kCol = 2;
-//			} else {
-//				kCol = 1;
-//			}
-//
-//			// apply kernel on pixel at [ii,jj]
-//			sum_pixels_by_weight(&sum, src[index + jj], kernel[kRow][kCol]);
-//		}
-//	}
-
 	if (filter) {
         for (ii = 0; ii < 9; ii++) {
             locali = ii/3;
@@ -123,25 +93,7 @@ static pixel applyKernel(int dim, int i, int j, pixel *src, int kernelSize, int 
                 max_col = globalj;
             }
         }
-//		// find min and max coordinates
-//		for(ii = startIndexI; ii <= endIndexI; ii++) {
-//            int index = ii * dim;
-//			for(jj = startIndexJ; jj <= endIndexJ; jj++) {
-//				// check if smaller than min or higher than max and update
-//				loop_pixel = src[index + jj];
-//                int intensity = ((int) loop_pixel.red) + ((int) loop_pixel.green) + ((int) loop_pixel.blue);
-//				if (intensity <= min_intensity) {
-//					min_intensity = intensity;
-//					min_row = ii;
-//					min_col = jj;
-//				}
-//				if (intensity > max_intensity) {
-//					max_intensity = intensity;
-//					max_row = ii;
-//					max_col = jj;
-//				}
-//			}
-//		}
+
 		// filter out min and max
         sum_pixels_by_weight(&sum, src[min_row * dim + min_col], -1);
         sum_pixels_by_weight(&sum, src[max_row * dim + max_col], -1);
