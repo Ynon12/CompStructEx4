@@ -3,10 +3,13 @@
 #include "myfunction1.h"
 #include "showBMP.h"
 #include <string.h>
+
+float THIRD = 1.0/3;
 #include <stdio.h>
 /*
  * initialize_pixel_sum - Initializes all fields of sum to 0
  */
+
 void initialize_pixel_sum(pixel_sum *sum) {
 	sum->red = sum->green = sum->blue = 0;
 	// sum->num = 0;
@@ -16,12 +19,12 @@ void initialize_pixel_sum(pixel_sum *sum) {
 /*
  * assign_sum_to_pixel - Truncates pixel's new value to match the range [0,255]
  */
-static void assign_sum_to_pixel(pixel *current_pixel, pixel_sum sum, int kernelScale) {
+static void assign_sum_to_pixel(pixel *current_pixel, pixel_sum sum, float kernelScale) {
 
     // divide by kernel's weight
-    sum.red = sum.red / kernelScale;
-    sum.green = sum.green / kernelScale;
-    sum.blue = sum.blue / kernelScale;
+    sum.red = (int) (sum.red * kernelScale);
+    sum.green = (int) (sum.green * kernelScale);
+    sum.blue = (int) (sum.blue * kernelScale);
 
     // truncate each pixel's color values to match the range [0,255]
     current_pixel->red = (unsigned char) (sum.red < 0 ? 0 : (sum.red > 255 ? 255 : sum.red));
@@ -215,7 +218,7 @@ static void sum_pixels_by_weight(pixel_sum *sum, pixel p, float weight) {
 //	return current_pixel;
 //}
 
-static pixel applyKernel1(int dim, int i, int j, pixel *src, int kernelSize, int kernelScale) {
+static pixel applyKernel1(int dim, int i, int j, pixel *src, int kernelSize, float kernelScale) {
 
     pixel_sum sum;
     pixel current_pixel;
@@ -231,37 +234,26 @@ static pixel applyKernel1(int dim, int i, int j, pixel *src, int kernelSize, int
 
     pixel tmp;
 
-//    int sumRed = 0;
-//    int sumBlue = 0;
-//    int sumGreen = 0;
-
     for (ii = 0; ii < 9; ii++) {
-        locali = ii/3;
+        locali = (int) ii * THIRD;
         localj = ii%3;
 
         globali = startIndexI+locali;
         globalj = startIndexJ+localj;
 
         tmp = src[globali*dim + globalj];
-//
-//        sumRed += tmp.red;
-//        sumBlue += tmp.blue;
-//        sumGreen += tmp.green;
 
         sum.red += tmp.red;
         sum.blue += tmp.blue;
         sum.green += tmp.green;
     }
 
-//    sum.red = sumRed;
-//    sum.blue = sumBlue;
-//    sum.green = sumGreen;
 
     // assign kernel's result to pixel at [i,j]
     assign_sum_to_pixel(&current_pixel, sum, kernelScale);
     return current_pixel;
 }
-static pixel applyKernel2(int dim, int i, int j, pixel *src, int kernelSize,  int kernelScale) {
+static pixel applyKernel2(int dim, int i, int j, pixel *src, int kernelSize,  float kernelScale) {
 
     pixel_sum sum;
     pixel current_pixel;
@@ -277,13 +269,9 @@ static pixel applyKernel2(int dim, int i, int j, pixel *src, int kernelSize,  in
 
     pixel tmp;
 
-//    int sumRed = 0;
-//    int sumBlue = 0;
-//    int sumGreen = 0;
-
     for (ii = 0; ii < 9; ii++) {
 
-        locali = ii/3;
+        locali = (int) ii * THIRD;
         localj = ii%3;
 
         globali = startIndexI+locali;
@@ -302,16 +290,11 @@ static pixel applyKernel2(int dim, int i, int j, pixel *src, int kernelSize,  in
         }
     }
 
-//    sum.red = sumRed;
-//    sum.blue = sumBlue;
-//    sum.green = sumGreen;
-
-
     // assign kernel's result to pixel at [i,j]
     assign_sum_to_pixel(&current_pixel, sum, kernelScale);
     return current_pixel;
 }
-static pixel applyKernel3(int dim, int i, int j, pixel *src, int kernelSize, int kernelScale) {
+static pixel applyKernel3(int dim, int i, int j, pixel *src, int kernelSize, float kernelScale) {
 
     pixel_sum sum;
     pixel current_pixel;
@@ -324,10 +307,6 @@ static pixel applyKernel3(int dim, int i, int j, pixel *src, int kernelSize, int
     int startIndexJ = j-1;
 
     pixel tmp;
-
-//    int sumRed = 0;
-//    int sumBlue = 0;
-//    int sumGreen = 0;
 
     tmp = src[(startIndexI+1)*dim + startIndexJ];
 
@@ -347,16 +326,11 @@ static pixel applyKernel3(int dim, int i, int j, pixel *src, int kernelSize, int
     sum.blue += tmp.blue;
     sum.green += tmp.green;
 
-//    sum.red = sumRed;
-//    sum.blue = sumBlue;
-//    sum.green = sumGreen;
-//
-
     // assign kernel's result to pixel at [i,j]
     assign_sum_to_pixel(&current_pixel, sum, kernelScale);
     return current_pixel;
 }
-static pixel applyKernel4(int dim, int i, int j, pixel *src, int kernelSize, int kernelScale) {
+static pixel applyKernel4(int dim, int i, int j, pixel *src, int kernelSize, float kernelScale) {
 
     pixel_sum sum;
     pixel current_pixel;
@@ -369,10 +343,6 @@ static pixel applyKernel4(int dim, int i, int j, pixel *src, int kernelSize, int
     int startIndexJ = j-1;
 
     pixel tmp;
-
-//    int sumRed = 0;
-//    int sumBlue = 0;
-//    int sumGreen = 0;
 
     tmp = src[(startIndexI+1)*dim + startIndexJ];
 
@@ -392,15 +362,11 @@ static pixel applyKernel4(int dim, int i, int j, pixel *src, int kernelSize, int
     sum.blue += tmp.blue * (-2);
     sum.green += tmp.green * (-2);
 
-//    sum.red = sumRed;
-//    sum.blue = sumBlue;
-//    sum.green = sumGreen;
-
     // assign kernel's result to pixel at [i,j]
     assign_sum_to_pixel(&current_pixel, sum, kernelScale);
     return current_pixel;
 }
-static pixel applyKernelFilter(int dim, int i, int j, pixel *src, int kernelSize, int kernelScale) {
+static pixel applyKernelFilter(int dim, int i, int j, pixel *src, int kernelSize, float kernelScale) {
 
     pixel_sum sum;
     pixel current_pixel;
@@ -413,7 +379,7 @@ static pixel applyKernelFilter(int dim, int i, int j, pixel *src, int kernelSize
     int startIndexJ = j-1;
 
     for (int ii = 0; ii < 9; ii++) {
-        int globali = startIndexI + ii/3;
+        int globali = startIndexI + (int) ii * THIRD;
         int globalj = startIndexJ + ii%3;
 
         pixel loop_pixel = src[globali * dim + globalj];
@@ -453,52 +419,52 @@ static pixel applyKernelFilter(int dim, int i, int j, pixel *src, int kernelSize
 * Ignore pixels where the kernel exceeds bounds. These are pixels with row index smaller than kernelSize/2 and/or
 * column index smaller than kernelSize/2
 */
-void smooth1(int dim, pixel *src, pixel *dst, int kernelSize, int kernelScale) {
+void smooth1(int dim, pixel *src, pixel *dst, int kernelSize, float kernelScale) {
 
 	int i, j;
-	for (i = kernelSize / 2 ; i < dim - kernelSize / 2; i++) {
+	for (i = 1 ; i < dim - 1; i++) {
         int rowStart = i * dim;
-		for (j =  kernelSize / 2 ; j < dim - kernelSize / 2 ; j++) {
+		for (j =  1 ; j < dim - 1 ; j++) {
 			dst[rowStart + j] = applyKernel1(dim, i, j, src, kernelSize, kernelScale);
 		}
 	}
 }
-void smooth2(int dim, pixel *src, pixel *dst, int kernelSize, int kernelScale) {
+void smooth2(int dim, pixel *src, pixel *dst, int kernelSize, float kernelScale) {
 
     int i, j;
-    for (i = kernelSize / 2 ; i < dim - kernelSize / 2; i++) {
+    for (i = 1 ; i < dim - 1; i++) {
         int rowStart = i * dim;
-        for (j =  kernelSize / 2 ; j < dim - kernelSize / 2 ; j++) {
+        for (j =  1 ; j < dim - 1 ; j++) {
             dst[rowStart + j] = applyKernel2(dim, i, j, src, kernelSize, kernelScale);
         }
     }
 }
-void smooth3(int dim, pixel *src, pixel *dst, int kernelSize, int kernelScale) {
+void smooth3(int dim, pixel *src, pixel *dst, int kernelSize, float kernelScale) {
 
     int i, j;
-    for (i = kernelSize / 2 ; i < dim - kernelSize / 2; i++) {
+    for (i = 1 ; i < dim - 1; i++) {
         int rowStart = i * dim;
-        for (j =  kernelSize / 2 ; j < dim - kernelSize / 2 ; j++) {
+        for (j =  1 ; j < dim - 1 ; j++) {
             dst[rowStart + j] = applyKernel3(dim, i, j, src, kernelSize, kernelScale);
         }
     }
 }
-void smooth4(int dim, pixel *src, pixel *dst, int kernelSize, int kernelScale) {
+void smooth4(int dim, pixel *src, pixel *dst, int kernelSize, float kernelScale) {
 
     int i, j;
-    for (i = kernelSize / 2 ; i < dim - kernelSize / 2; i++) {
+    for (i = 1 ; i < dim - 1; i++) {
         int rowStart = i * dim;
-        for (j =  kernelSize / 2 ; j < dim - kernelSize / 2 ; j++) {
+        for (j =  1 ; j < dim - 1 ; j++) {
             dst[rowStart + j] = applyKernel4(dim, i, j, src, kernelSize, kernelScale);
         }
     }
 }
-void smoothfilter(int dim, pixel *src, pixel *dst, int kernelSize, int kernelScale) {
+void smoothfilter(int dim, pixel *src, pixel *dst, int kernelSize, float kernelScale) {
 
     int i, j;
-    for (i = kernelSize / 2 ; i < dim - kernelSize / 2; i++) {
+    for (i = 1 ; i < dim - 1; i++) {
         int rowStart = i * dim;
-        for (j =  kernelSize / 2 ; j < dim - kernelSize / 2 ; j++) {
+        for (j =  1 ; j < dim - 1 ; j++) {
             dst[rowStart + j] = applyKernelFilter(dim, i, j, src, kernelSize, kernelScale);
         }
     }
@@ -531,7 +497,7 @@ void copyPixels(pixel* src, pixel* dst) {
 
 }
 
-void doConvolution(Image *image, int kernelSize, int kernel[kernelSize][kernelSize], int kernelScale, bool filter, int kernelNum) {
+void doConvolution(Image *image, int kernelSize, int kernel[kernelSize][kernelSize], float kernelScale, bool filter, int kernelNum) {
 
 	pixel* pixelsImg = malloc(m*n*sizeof(pixel));
 	pixel* backupOrg = malloc(m*n*sizeof(pixel));
