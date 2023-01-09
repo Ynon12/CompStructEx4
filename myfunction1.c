@@ -259,16 +259,6 @@ static pixel applyKernelFilter(int dim, int i, int j, pixel *src, float kernelSc
         max_col = (intensity > max_intensity) ? startIndexJ + ii : max_col;
         max_intensity = (intensity > max_intensity) ? intensity : max_intensity;
 
-//        if (intensity <= min_intensity) {
-//            min_intensity = intensity;
-//            min_row = startIndexI;
-//            min_col = startIndexJ + ii;
-//        }
-//        if (intensity > max_intensity) {
-//            max_intensity = intensity;
-//            max_row = startIndexI;
-//            max_col = startIndexJ + ii;
-//        }
     }
 
     startIndexI += dim;
