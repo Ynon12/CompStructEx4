@@ -43,37 +43,37 @@ void myfunction(Image *image, char* srcImgpName, char* blurRsltImgName, char* sh
 
 	if (flag == '1') {	
 		// blur image
-		doConvolution(image, 3, blurKernel, kerScale9, false, 1);
+		doConvolution(image, kerScale9, false, 1);
 
 		// write result image to file
 		writeBMP(image, srcImgpName, blurRsltImgName);	
 
 		// sharpen the resulting image
-		doConvolution(image, 3, sharpKernel, 1, false, 2);
+		doConvolution(image, 1, false, 2);
 		
 		// write result image to file
 		writeBMP(image, srcImgpName, sharpRsltImgName);	
     } else if (flag == '2') {	
 		// blur image with row-blurring kernel
-		doConvolution(image, 3, rowBlurKernel, kerscale4, false, 3);
+		doConvolution(image, kerscale4, false, 3);
 
 		// write result image to file
 		writeBMP(image, srcImgpName, rowBlurRsltImgName);
 
 		// sharpen the resulting image with row-sharpening kernel
-		doConvolution(image, 3, rowSharpKernel, kerscale2, false, 4);
+		doConvolution(image, kerscale2, false, 4);
 
 		// write result image to file
 		writeBMP(image, srcImgpName, rowSharpRsltImgName);	
 	} else {
 		// apply extermum filtered kernel to blur image
-		doConvolution(image, 3, blurKernel, kerscale7, true, 1);
+		doConvolution(image, kerscale7, true, 1);
 
 		// write result image to file
 		writeBMP(image, srcImgpName, filteredBlurRsltImgName);
 
 		// sharpen the resulting image
-		doConvolution(image, 3, sharpKernel, 1, false, 2);
+		doConvolution(image, 1, false, 2);
 
 		// write result image to file
 		writeBMP(image, srcImgpName, filteredSharpRsltImgName);	

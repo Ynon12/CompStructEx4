@@ -46,7 +46,7 @@ static void sum_pixels_by_weight(pixel_sum *sum, pixel p, float weight) {
 	return;
 }
 
-static pixel applyKernel1(int dim, int i, int j, pixel *src, int kernelSize, float kernelScale) {
+static pixel applyKernel1(int dim, int i, int j, pixel *src, float kernelScale) {
 
     pixel_sum sum;
     pixel current_pixel;
@@ -98,7 +98,7 @@ static pixel applyKernel1(int dim, int i, int j, pixel *src, int kernelSize, flo
     assign_sum_to_pixel(&current_pixel, sum, kernelScale);
     return current_pixel;
 }
-static pixel applyKernel2(int dim, int i, int j, pixel *src, int kernelSize,  float kernelScale) {
+static pixel applyKernel2(int dim, int i, int j, pixel *src, float kernelScale) {
 
     pixel_sum sum;
     pixel current_pixel;
@@ -160,7 +160,7 @@ static pixel applyKernel2(int dim, int i, int j, pixel *src, int kernelSize,  fl
     assign_sum_to_pixel(&current_pixel, sum, kernelScale);
     return current_pixel;
 }
-static pixel applyKernel3(int dim, int i, int j, pixel *src, int kernelSize, float kernelScale) {
+static pixel applyKernel3(int dim, int i, int j, pixel *src, float kernelScale) {
 
     pixel_sum sum;
     pixel current_pixel;
@@ -195,7 +195,7 @@ static pixel applyKernel3(int dim, int i, int j, pixel *src, int kernelSize, flo
     assign_sum_to_pixel(&current_pixel, sum, kernelScale);
     return current_pixel;
 }
-static pixel applyKernel4(int dim, int i, int j, pixel *src, int kernelSize, float kernelScale) {
+static pixel applyKernel4(int dim, int i, int j, pixel *src, float kernelScale) {
 
     pixel_sum sum;
     pixel current_pixel;
@@ -230,7 +230,7 @@ static pixel applyKernel4(int dim, int i, int j, pixel *src, int kernelSize, flo
     assign_sum_to_pixel(&current_pixel, sum, kernelScale);
     return current_pixel;
 }
-static pixel applyKernelFilter(int dim, int i, int j, pixel *src, int kernelSize, float kernelScale) {
+static pixel applyKernelFilter(int dim, int i, int j, pixel *src, float kernelScale) {
 
     pixel_sum sum;
     pixel current_pixel;
@@ -251,16 +251,24 @@ static pixel applyKernelFilter(int dim, int i, int j, pixel *src, int kernelSize
         sum.blue += loop_pixel.blue;
         sum.green += loop_pixel.green;
 
-        if (intensity <= min_intensity) {
-            min_intensity = intensity;
-            min_row = startIndexI;
-            min_col = startIndexJ + ii;
-        }
-        if (intensity > max_intensity) {
-            max_intensity = intensity;
-            max_row = startIndexI;
-            max_col = startIndexJ + ii;
-        }
+        min_row = (intensity <= min_intensity) ? startIndexI : min_row;
+        min_col = (intensity <= min_intensity) ? startIndexJ + ii : min_col;
+        min_intensity = (intensity <= min_intensity) ? intensity : min_intensity;
+
+        max_row = (intensity > max_intensity) ? startIndexI : max_row;
+        max_col = (intensity > max_intensity) ? startIndexJ + ii : max_col;
+        max_intensity = (intensity > max_intensity) ? intensity : max_intensity;
+
+//        if (intensity <= min_intensity) {
+//            min_intensity = intensity;
+//            min_row = startIndexI;
+//            min_col = startIndexJ + ii;
+//        }
+//        if (intensity > max_intensity) {
+//            max_intensity = intensity;
+//            max_row = startIndexI;
+//            max_col = startIndexJ + ii;
+//        }
     }
 
     startIndexI += dim;
@@ -327,53 +335,53 @@ static pixel applyKernelFilter(int dim, int i, int j, pixel *src, int kernelSize
 * Ignore pixels where the kernel exceeds bounds. These are pixels with row index smaller than kernelSize/2 and/or
 * column index smaller than kernelSize/2
 */
-void smooth1(int dim, pixel *src, pixel *dst, int kernelSize, float kernelScale) {
+void smooth1(int dim, pixel *src, pixel *dst, float kernelScale) {
 
 	int i, j;
 	for (i = 1 ; i < dim - 1; i++) {
         int rowStart = i * dim;
 		for (j =  1 ; j < dim - 1 ; j++) {
-			dst[rowStart + j] = applyKernel1(dim, i, j, src, kernelSize, kernelScale);
+			dst[rowStart + j] = applyKernel1(dim, i, j, src, kernelScale);
 		}
 	}
 }
-void smooth2(int dim, pixel *src, pixel *dst, int kernelSize, float kernelScale) {
+void smooth2(int dim, pixel *src, pixel *dst, float kernelScale) {
 
     int i, j;
     for (i = 1 ; i < dim - 1; i++) {
         int rowStart = i * dim;
         for (j =  1 ; j < dim - 1 ; j++) {
-            dst[rowStart + j] = applyKernel2(dim, i, j, src, kernelSize, kernelScale);
+            dst[rowStart + j] = applyKernel2(dim, i, j, src, kernelScale);
         }
     }
 }
-void smooth3(int dim, pixel *src, pixel *dst, int kernelSize, float kernelScale) {
+void smooth3(int dim, pixel *src, pixel *dst, float kernelScale) {
 
     int i, j;
     for (i = 1 ; i < dim - 1; i++) {
         int rowStart = i * dim;
         for (j =  1 ; j < dim - 1 ; j++) {
-            dst[rowStart + j] = applyKernel3(dim, i, j, src, kernelSize, kernelScale);
+            dst[rowStart + j] = applyKernel3(dim, i, j, src, kernelScale);
         }
     }
 }
-void smooth4(int dim, pixel *src, pixel *dst, int kernelSize, float kernelScale) {
+void smooth4(int dim, pixel *src, pixel *dst, float kernelScale) {
 
     int i, j;
     for (i = 1 ; i < dim - 1; i++) {
         int rowStart = i * dim;
         for (j =  1 ; j < dim - 1 ; j++) {
-            dst[rowStart + j] = applyKernel4(dim, i, j, src, kernelSize, kernelScale);
+            dst[rowStart + j] = applyKernel4(dim, i, j, src, kernelScale);
         }
     }
 }
-void smoothfilter(int dim, pixel *src, pixel *dst, int kernelSize, float kernelScale) {
+void smoothfilter(int dim, pixel *src, pixel *dst, float kernelScale) {
 
     int i, j;
     for (i = 1 ; i < dim - 1; i++) {
         int rowStart = i * dim;
         for (j =  1 ; j < dim - 1 ; j++) {
-            dst[rowStart + j] = applyKernelFilter(dim, i, j, src, kernelSize, kernelScale);
+            dst[rowStart + j] = applyKernelFilter(dim, i, j, src, kernelScale);
         }
     }
 }
@@ -405,31 +413,26 @@ void copyPixels(pixel* src, pixel* dst) {
 
 }
 
-void doConvolution(Image *image, int kernelSize, int kernel[kernelSize][kernelSize], float kernelScale, bool filter, int kernelNum) {
+void doConvolution(Image *image, float kernelScale, bool filter, int kernelNum) {
+    pixel* pixelsImg = (pixel*) image->data;
+    pixel* backupOrg = malloc(m*n*sizeof(pixel));
 
-	pixel* pixelsImg = malloc(m*n*sizeof(pixel));
-	pixel* backupOrg = malloc(m*n*sizeof(pixel));
-
-	charsToPixels(image, pixelsImg);
-	copyPixels(pixelsImg, backupOrg);
+    copyPixels(pixelsImg, backupOrg);
 
     if (!filter) {
         if (kernelNum == 1) {
-            smooth1(m, backupOrg, pixelsImg, kernelSize, kernelScale);
+            smooth1(m, backupOrg, pixelsImg, kernelScale);
         } else if (kernelNum == 2) {
-            smooth2(m, backupOrg, pixelsImg, kernelSize, kernelScale);
+            smooth2(m, backupOrg, pixelsImg, kernelScale);
         } else if (kernelNum == 3) {
-            smooth3(m, backupOrg, pixelsImg, kernelSize, kernelScale);
+            smooth3(m, backupOrg, pixelsImg, kernelScale);
         } else if (kernelNum == 4) {
-            smooth4(m, backupOrg, pixelsImg, kernelSize, kernelScale);
+            smooth4(m, backupOrg, pixelsImg, kernelScale);
         }
     } else {
-        smoothfilter(m, backupOrg, pixelsImg, kernelSize, kernelScale);
+        smoothfilter(m, backupOrg, pixelsImg, kernelScale);
     }
 
-	pixelsToChars(pixelsImg, image);
-
-	free(pixelsImg);
-	free(backupOrg);
+    free(backupOrg);
 }
 
